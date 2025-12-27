@@ -63,20 +63,5 @@ DumbDrawPhD："喵~明白啦！(≧▽≦) 正在用seaborn生成彩虹柱状图
 ## 开发
 打包成exe或其它二进制文件时候，务必使用隐式导入，将一些必要的包加进去，不然可执行文件里运行代码的时候会找不到包。例如以下：
 ```commandline
-pyinstaller -w DumbDrawPhD.py \
-    --hidden-import PySide6 \
-    --hidden-import requests \
-    --hidden-import matplotlib \
-    --hidden-import seaborn \
-    --hidden-import pandas \
-    --hidden-import openpyxl \
-    --hidden-import PIL \
-    --hidden-import Bio \
-    --hidden-import numpy \
-    --hidden-import rasterio \
-    --hidden-import sklearn \
-    --hidden-import skimage \
-    --hidden-import scipy \
-    --hidden-import cv2 \
-    --hidden-import openai
+pyinstaller -w DumbDrawPhD.py     --hidden-import PySide6     --hidden-import requests     --hidden-import matplotlib     --hidden-import seaborn     --hidden-import pandas     --hidden-import openpyxl     --hidden-import PIL     --hidden-import Bio     --hidden-import numpy     --hidden-import rasterio     --hidden-import sklearn     --hidden-import skimage     --hidden-import scipy     --hidden-import cv2     --hidden-import openai
 ```
