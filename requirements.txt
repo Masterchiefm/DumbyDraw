@@ -1,0 +1,17 @@
+pyside6
+requests
+matplotlib==3.7.5
+seaborn
+pandas
+openpyxl
+pillow
+requests
+biopython
+numpy
+pyinstaller
+rasterio
+scikit-learn
+scikit-image
+scipy
+opencv-python
+openai
