@@ -37,6 +37,12 @@ pip install git+https://gitee.com/MasterChiefm/DumbDrawPhD.git
 # 网络好的话用这个链接
 pip install git+https://github.com/Masterchiefm/DumbDrawPhD.git
 ```
+
+注意，Ubuntu还需要安装以下依赖：
+```
+sudo apt update && sudo apt install libxcb-cursor0
+```
+
 搞定这些后，以后要运行就直接这样：
 ```commandline
 DumbDrawPhD
