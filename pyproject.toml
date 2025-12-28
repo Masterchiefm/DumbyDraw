@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "DumbDrawPhD"
+version = "1.3.0"
+description = "AI-powered Python plotting GUI tool"
+readme = "README.md"
+authors = [
+    { name = "mo qiqin", email = "moqiqin@live.com" }
+]
+requires-python = ">=3.8"
+
+dependencies = [
+    "pyside6",
+    "requests",
+    "matplotlib==3.7.5",
+    "seaborn",
+    "pandas",
+    "openpyxl",
+    "pillow",
+    "biopython",
+    "numpy",
+    "rasterio",
+    "scikit-learn",
+    "scikit-image",
+    "scipy",
+    "opencv-python",
+    "openai"
+]
+
+[project.scripts]
+DumbDrawPhD = "dumbdrawphd.DumbDrawPhD:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

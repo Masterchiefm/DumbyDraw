@@ -4,9 +4,14 @@ dist/
 .venv/
 .idea/
 __pycache__
+DumbDrawPhD.spec
+DumbDrawPhD.egg-info/
 
 # 忽略所有PNG图片
-*.png
+*.jpg
+*.exe
+*.tar.gz
+
 
 # 忽略特定的Python测试文件
 test.py
