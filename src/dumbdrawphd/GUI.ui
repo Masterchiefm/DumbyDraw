@@ -203,20 +203,6 @@
              <string>AI API信息</string>
             </property>
             <layout class="QGridLayout" name="gridLayout">
-             <item row="2" column="3">
-              <widget class="QPushButton" name="pushButton_test_api">
-               <property name="text">
-                <string>测试</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>model</string>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label">
                <property name="text">
@@ -224,8 +210,15 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="2">
-              <widget class="QLineEdit" name="lineEdit_key"/>
+             <item row="2" column="0">
+              <widget class="QLineEdit" name="lineEdit_baseurl"/>
+             </item>
+             <item row="2" column="4">
+              <widget class="QPushButton" name="pushButton_save_api">
+               <property name="text">
+                <string>保存</string>
+               </property>
+              </widget>
              </item>
              <item row="0" column="2">
               <widget class="QLabel" name="label_3">
@@ -234,16 +227,23 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
-              <widget class="QLineEdit" name="lineEdit_baseurl"/>
+             <item row="2" column="2">
+              <widget class="QLineEdit" name="lineEdit_key"/>
              </item>
              <item row="2" column="1">
               <widget class="QLineEdit" name="lineEdit_model"/>
              </item>
-             <item row="2" column="4">
-              <widget class="QPushButton" name="pushButton_save_api">
+             <item row="0" column="1">
+              <widget class="QLabel" name="label_2">
                <property name="text">
-                <string>保存</string>
+                <string>model</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="5">
+              <widget class="QPushButton" name="pushButton_test_api">
+               <property name="text">
+                <string>测试</string>
                </property>
               </widget>
              </item>

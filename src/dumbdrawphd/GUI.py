@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'GUIehadqY.ui'
+## Form generated from reading UI file 'GUILFLAUU.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.1
 ##
@@ -40,7 +40,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.frame_5 = QFrame(self.centralwidget)
         self.frame_5.setObjectName(u"frame_5")
-        self.frame_5.setAcceptDrops(True)
         self.frame_5.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame_5.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout_7 = QHBoxLayout(self.frame_5)
@@ -158,45 +157,45 @@ class Ui_MainWindow(object):
         self.groupBox_4.setObjectName(u"groupBox_4")
         self.gridLayout = QGridLayout(self.groupBox_4)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.pushButton_test_api = QPushButton(self.groupBox_4)
-        self.pushButton_test_api.setObjectName(u"pushButton_test_api")
-
-        self.gridLayout.addWidget(self.pushButton_test_api, 2, 3, 1, 1)
-
-        self.label_2 = QLabel(self.groupBox_4)
-        self.label_2.setObjectName(u"label_2")
-
-        self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
-
         self.label = QLabel(self.groupBox_4)
         self.label.setObjectName(u"label")
 
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-
-        self.lineEdit_key = QLineEdit(self.groupBox_4)
-        self.lineEdit_key.setObjectName(u"lineEdit_key")
-
-        self.gridLayout.addWidget(self.lineEdit_key, 2, 2, 1, 1)
-
-        self.label_3 = QLabel(self.groupBox_4)
-        self.label_3.setObjectName(u"label_3")
-
-        self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
 
         self.lineEdit_baseurl = QLineEdit(self.groupBox_4)
         self.lineEdit_baseurl.setObjectName(u"lineEdit_baseurl")
 
         self.gridLayout.addWidget(self.lineEdit_baseurl, 2, 0, 1, 1)
 
+        self.pushButton_save_api = QPushButton(self.groupBox_4)
+        self.pushButton_save_api.setObjectName(u"pushButton_save_api")
+
+        self.gridLayout.addWidget(self.pushButton_save_api, 2, 4, 1, 1)
+
+        self.label_3 = QLabel(self.groupBox_4)
+        self.label_3.setObjectName(u"label_3")
+
+        self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
+
+        self.lineEdit_key = QLineEdit(self.groupBox_4)
+        self.lineEdit_key.setObjectName(u"lineEdit_key")
+
+        self.gridLayout.addWidget(self.lineEdit_key, 2, 2, 1, 1)
+
         self.lineEdit_model = QLineEdit(self.groupBox_4)
         self.lineEdit_model.setObjectName(u"lineEdit_model")
 
         self.gridLayout.addWidget(self.lineEdit_model, 2, 1, 1, 1)
 
-        self.pushButton_save_api = QPushButton(self.groupBox_4)
-        self.pushButton_save_api.setObjectName(u"pushButton_save_api")
+        self.label_2 = QLabel(self.groupBox_4)
+        self.label_2.setObjectName(u"label_2")
 
-        self.gridLayout.addWidget(self.pushButton_save_api, 2, 4, 1, 1)
+        self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
+
+        self.pushButton_test_api = QPushButton(self.groupBox_4)
+        self.pushButton_test_api.setObjectName(u"pushButton_test_api")
+
+        self.gridLayout.addWidget(self.pushButton_test_api, 2, 5, 1, 1)
 
 
         self.verticalLayout_4.addWidget(self.groupBox_4)
@@ -311,11 +310,11 @@ class Ui_MainWindow(object):
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Log", None))
         self.pushButton_analyse.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u59cb\u5206\u6790", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"AI API\u4fe1\u606f", None))
-        self.pushButton_test_api.setText(QCoreApplication.translate("MainWindow", u"\u6d4b\u8bd5", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"model", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Base url", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"API-Key", None))
         self.pushButton_save_api.setText(QCoreApplication.translate("MainWindow", u"\u4fdd\u5b58", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"API-Key", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"model", None))
+        self.pushButton_test_api.setText(QCoreApplication.translate("MainWindow", u"\u6d4b\u8bd5", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"\u4ee3\u7801\u9884\u89c8", None))
         self.pushButton_run_code.setText(QCoreApplication.translate("MainWindow", u"\u76f4\u63a5\u8fd0\u884c\u6b64\u5904\u4ee3\u7801", None))
         self.radioButton_edit_code.setText(QCoreApplication.translate("MainWindow", u"\u4fee\u6539\u4ee3\u7801", None))
