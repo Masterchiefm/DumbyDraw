@@ -353,15 +353,21 @@ scipy
     # 配置文件
     # ---------------------
     def get_config(self) -> Tuple[str, str, str]:
-        if not os.path.exists("config.json"):
-            with open("config.json", "w", encoding="utf-8") as f:
+        # 获取家目录下的配置文件路径
+        config_path = os.path.expanduser("~/.dumbdrawphd_config.json")
+
+        if not os.path.exists(config_path):
+            # 确保家目录存在
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+
+            with open(config_path, "w", encoding="utf-8") as f:
                 json.dump({
                     "baseurl": "",
                     "model": "",
                     "api_key": ""
                 }, f, indent=4)
 
-        with open("config.json", "r", encoding="utf-8") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             cfg = json.load(f)
 
         self.baseurl = cfg.get("baseurl", "")
@@ -374,7 +380,9 @@ scipy
 
     def save_config(self):
         try:
-            with open("config.json", "w", encoding="utf-8") as f:
+            config_path = os.path.expanduser("~/.dumbdrawphd_config.json")
+
+            with open(config_path, "w", encoding="utf-8") as f:
                 json.dump({
                     "baseurl": self.ui.lineEdit_baseurl.text(),
                     "model": self.ui.lineEdit_model.text(),
