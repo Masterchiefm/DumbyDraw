@@ -310,7 +310,7 @@ class MainWindow(QMainWindow):
     # ---------------------
     def generate_code(self):
         # self.ui.pushButton_analyse.setDisabled(True)
-        # user_query = self.ui.plainTextEdit_query.toPlainText()
+        user_query = self.ui.plainTextEdit_query.toPlainText()
         system_prompt = """你是一个python绘图代码生成工具，你能根据用户的输入直接生成代码。
 你输出的内容只能有代码，不能有代码之外的其它东西。
 输出必须是 markdown ``` ``` 包裹的代码。
@@ -340,7 +340,7 @@ scipy
             self.baseurl,
             self.model,
             self.api_key,
-            self.user_query,
+            user_query,
             system_prompt,
             self.result_queue
         )
