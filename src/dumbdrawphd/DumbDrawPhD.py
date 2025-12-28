@@ -124,7 +124,7 @@ class FileDropListWidget(QListWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.__version__ = "1.3"
+        self.__version__ = "1.4"
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
