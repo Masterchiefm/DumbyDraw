@@ -98,29 +98,9 @@ DumbDrawPhD："喵~明白啦！(≧▽≦) 正在用seaborn生成彩虹柱状图
 *"就算是最笨的博士，也有权利画出漂亮的图表！" —— DumbDrawPhD开发喵*
 
 
-## 开发
-打包成exe或其它二进制文件时候，务必使用隐式导入，将一些必要的包加进去，不然可执行文件里运行代码的时候会找不到包。例如以下：
+## 打包分发
+打包成exe或其它二进制文件时候，不要使用pyinstaller等工具，否则运行生成代码的时候会缺一堆包。
 
-Windows:
-```powershell
-pyinstaller -w DumbDrawPhD.py     --hidden-import PySide6     --hidden-import requests     --hidden-import matplotlib     --hidden-import seaborn     --hidden-import pandas     --hidden-import openpyxl     --hidden-import PIL     --hidden-import Bio     --hidden-import numpy     --hidden-import rasterio     --hidden-import sklearn     --hidden-import skimage     --hidden-import scipy     --hidden-import cv2   
-```
+建议使用conda pack将整个环境打包。
 
-Linux:
-```commandline
-pyinstaller -w DumbDrawPhD.py \
-    --hidden-import PySide6 \
-    --hidden-import requests \
-    --hidden-import matplotlib \
-    --hidden-import seaborn \
-    --hidden-import pandas \
-    --hidden-import openpyxl \
-    --hidden-import PIL \
-    --hidden-import Bio \
-    --hidden-import numpy \
-    --hidden-import rasterio \
-    --hidden-import sklearn \
-    --hidden-import skimage \
-    --hidden-import scipy \
-    --hidden-import cv2 
-```
+installer里是windows内的打包工具。
