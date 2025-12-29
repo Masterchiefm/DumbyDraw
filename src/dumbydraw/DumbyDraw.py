@@ -1,22 +1,21 @@
-
 import sys
 import os
 import json
 import queue
 import tempfile
+import subprocess
+import threading
+import signal
 from importlib import import_module
 from typing import Tuple
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog, QListWidgetItem, QListWidget,QSizePolicy
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog, QListWidgetItem, QListWidget, QSizePolicy, QPushButton
 from PySide6.QtCore import QThread, QObject, QTimer
 
 # from deepseek import DeepSeek
 # from GUI import Ui_MainWindow
 from .deepseek import DeepSeek
 from .GUI import Ui_MainWindow
-
-
-
 
 # =====================================================
 # stdout / stderr 行缓冲重定向（关键修复点）
@@ -56,28 +55,44 @@ class AnalyseWorker(QObject):
         self.user_query = user_query
         self.system_prompt = system_prompt
         self.result_queue = result_queue
-        # # 获取临时文件夹路径
-        # temp_dir = tempfile.gettempdir()
-        # # 拼接路径
-        # self.temp_file_path = os.path.join(temp_dir, "tmp.py")
-        # # python解释器路径
-        # self.executable = sys.executable
+        self._stop_flag = False
+        self.client = None
+
+    def stop(self):
+        """停止AI生成"""
+        self._stop_flag = True
+        print("🛑 正在停止AI生成...")
 
     def run(self):
         try:
             print("🚀 开始调用 AI 接口")
 
-            client = DeepSeek(
+            # 检查停止标志
+            if self._stop_flag:
+                print("⏹️ AI生成已被停止")
+                return
+
+            self.client = DeepSeek(
                 base_url=self.baseurl,
                 model=self.model,
                 API_key=self.api_key
             )
 
-            code = client.get_response(
+            # 检查停止标志
+            if self._stop_flag:
+                print("⏹️ AI生成已被停止")
+                return
+
+            code = self.client.get_response(
                 query=self.user_query,
                 prompt=self.system_prompt,
                 return_type="string"
             )
+
+            # 检查停止标志
+            if self._stop_flag:
+                print("⏹️ AI生成已被停止")
+                return
 
             print("✅ AI 返回完成，开始清理代码")
 
@@ -89,11 +104,132 @@ class AnalyseWorker(QObject):
             if code.endswith("```"):
                 code = code[:-3]
 
-            self.result_queue.put(code)
-            print("📦 代码已发送回主线程")
+            # 检查停止标志
+            if not self._stop_flag:
+                self.result_queue.put(code)
+                print("📦 代码已发送回主线程")
 
         except Exception as e:
-            print(f"❌ 后台异常: {e}")
+            if not self._stop_flag:
+                print(f"❌ 后台异常: {e}")
+
+
+# =====================================================
+# 代码执行 Worker（在后台进程中执行代码）
+# =====================================================
+class CodeRunner:
+    def __init__(self, log_queue: queue.Queue):
+        self.log_queue = log_queue
+        self.process = None
+        self.running = False
+        self._stop_flag = False
+        
+    def run_code_in_background(self, code: str):
+        """在后台进程中执行代码"""
+        if self.running:
+            self.log_queue.put("⚠️ 已有代码正在运行，请等待完成")
+            return
+            
+        self.running = True
+        self._stop_flag = False
+        thread = threading.Thread(target=self._execute_code, args=(code,))
+        thread.daemon = True
+        thread.start()
+    
+    def _execute_code(self, code: str):
+        """实际执行代码的方法"""
+        try:
+            # 创建临时文件
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
+                f.write(code)
+                temp_file_path = f.name
+            
+            self.log_queue.put(f"📝 临时文件已创建: {temp_file_path}")
+            
+            # 获取Python解释器路径
+            python_exe = sys.executable
+            self.log_queue.put(f"🐍 使用Python解释器: {python_exe}")
+            
+            
+            # 检查停止标志
+            if self._stop_flag:
+                self.log_queue.put("⏹️ 代码执行已被取消")
+                self._cleanup_temp_file(temp_file_path)
+                return
+            
+            # 启动子进程执行代码
+            self.log_queue.put(f"⏹️ 代码正在后台运行...")
+            self.process = subprocess.Popen(
+                [python_exe, temp_file_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding='utf-8'
+            )
+            
+            # 实时读取输出
+            while True:
+                # 检查停止标志
+                if self._stop_flag:
+                    self.log_queue.put("⏹️ 正在停止代码执行...")
+                    self.process.terminate()
+                    break
+                
+                # 读取标准输出
+                stdout_line = self.process.stdout.readline()
+                if stdout_line:
+                    self.log_queue.put(stdout_line.rstrip('\n'))
+                
+                # 读取标准错误
+                stderr_line = self.process.stderr.readline()
+                if stderr_line:
+                    self.log_queue.put(f"❌ {stderr_line.rstrip('\n')}")
+                
+                # 检查进程是否结束
+                if self.process.poll() is not None:
+                    # 读取剩余输出
+                    for line in self.process.stdout.readlines():
+                        if line.strip():
+                            self.log_queue.put(line.rstrip('\n'))
+                    for line in self.process.stderr.readlines():
+                        if line.strip():
+                            self.log_queue.put(f"❌ {line.rstrip('\n')}")
+                    break
+            
+            # 检查停止标志
+            if not self._stop_flag:
+                # 获取返回码
+                return_code = self.process.wait()
+                if return_code == 0:
+                    self.log_queue.put("✅ 代码执行完成")
+                else:
+                    self.log_queue.put(f"❌ 代码执行失败，返回码: {return_code}")
+            
+            # 清理临时文件
+            # self._cleanup_temp_file(temp_file_path)
+                
+        except Exception as e:
+            self.log_queue.put(f"❌ 执行代码时发生错误: {e}")
+        finally:
+            self.running = False
+            self.process = None
+    
+    def _cleanup_temp_file(self, temp_file_path: str):
+        """清理临时文件"""
+        try:
+            os.unlink(temp_file_path)
+            self.log_queue.put(f"🗑️ 临时文件已删除: {temp_file_path}")
+        except Exception as e:
+            self.log_queue.put(f"⚠️ 无法删除临时文件: {e}")
+    
+    def stop_execution(self):
+        """停止正在执行的代码"""
+        if self.running:
+            self._stop_flag = True
+            if self.process and self.process.poll() is None:
+                self.process.terminate()
+                self.log_queue.put("⏹️ 代码执行已停止")
+
 
 class FileDropListWidget(QListWidget):
     def __init__(self, parent=None):
@@ -145,6 +281,13 @@ class MainWindow(QMainWindow):
         sys.stdout = EmittingStream(self.log_queue)
         sys.stderr = EmittingStream(self.log_queue)
 
+        # ===== 代码执行器 =====
+        self.code_runner = CodeRunner(self.log_queue)
+
+        # ===== AI生成相关 =====
+        self.ai_worker = None
+        self.ai_thread = None
+
         # ===== 定时器 =====
         self.log_timer = QTimer(self)
         self.log_timer.timeout.connect(self.update_log)
@@ -169,8 +312,6 @@ class MainWindow(QMainWindow):
 
         self.ui.listWidget_files = new_widget
 
-
-
         # ===== 隐藏修改代码区域 ====
         self.ui.frame_edit_code.hide()
 
@@ -183,13 +324,70 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_remove.clicked.connect(self.remove_selection)
         self.ui.pushButton_send_edit_query.clicked.connect(self.edit_code)
         self.ui.pushButton_test_api.clicked.connect(self.check_connection)
+        
+        # ===== 添加停止按钮 =====
+        self.setup_stop_buttons()
+
+    def setup_stop_buttons(self):
+        """设置停止按钮"""
+        # 可以在UI中手动添加一个停止按钮，或者使用现有按钮
+        # 这里展示两种方式：
+        
+        # 方式1：添加新的停止按钮（推荐）
+        try:
+            # 这里假设你在UI文件中已经添加了一个名为pushButton_stop的按钮
+            self.ui.pushButton_stop.clicked.connect(self.stop_all_processes)
+            self.ui.pushButton_stop.setEnabled(False)  # 初始不可用
+        except AttributeError:
+            # 如果UI中没有该按钮，可以动态创建一个
+            self.stop_button = QPushButton("停止所有进程", self)
+            self.stop_button.clicked.connect(self.stop_all_processes)
+            self.stop_button.setEnabled(False)
+            # 添加到现有布局中（这里需要根据你的UI结构调整位置）
+            # 例如：self.ui.verticalLayout.addWidget(self.stop_button)
+        
+        # 方式2：复用现有按钮（在运行时切换）
+        self.is_stopping = False
+
+    def stop_all_processes(self):
+        """停止所有正在运行的进程"""
+        print("🛑 正在停止所有进程...")
+        
+        # 停止AI生成
+        self.stop_ai_generation()
+        
+        # 停止代码执行
+        self.stop_code_execution()
+        
+        print("✅ 已发送停止信号")
+
+    def stop_ai_generation(self):
+        """停止AI代码生成"""
+        if self.ai_worker:
+            self.ai_worker.stop()
+            print("⏹️ AI生成已停止")
+            
+        if self.ai_thread and self.ai_thread.isRunning():
+            # 等待线程安全结束
+            self.ai_thread.quit()
+            self.ai_thread.wait(1000)  # 等待1秒
+            if self.ai_thread.isRunning():
+                self.ai_thread.terminate()
+            print("🧵 AI线程已停止")
+            
+        self.ai_worker = None
+        self.ai_thread = None
+
+    def stop_code_execution(self):
+        """停止代码执行"""
+        self.code_runner.stop_execution()
 
     def add_drag_file(self):
         """
         识别拖到self.ui.listWidget_files的文件/文件夹，获得它们的路径。然后把这些路径添加到self.ui.listWidget_files里
         :return:
         """
-        self.ui.listWidget_files
+        pass  # 已在dropEvent中实现
 
     def edit_code(self):
         original_code = self.ui.plainTextEdit_code.toPlainText()
@@ -211,8 +409,8 @@ class MainWindow(QMainWindow):
 
         print("🧵 启动后台线程")
 
-        self.thread = QThread(self)
-        self.worker = AnalyseWorker(
+        self.ai_thread = QThread(self)
+        self.ai_worker = AnalyseWorker(
             self.baseurl,
             self.model,
             self.api_key,
@@ -221,25 +419,12 @@ class MainWindow(QMainWindow):
             self.result_queue
         )
 
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.thread.start()
-        print("🧵 启动后台线程")
-
-        self.thread = QThread(self)
-        self.worker = AnalyseWorker(
-            self.baseurl,
-            self.model,
-            self.api_key,
-            user_query,
-            system_prompt,
-            self.result_queue
-        )
-
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.thread.start()
-
+        self.ai_worker.moveToThread(self.ai_thread)
+        self.ai_thread.started.connect(self.ai_worker.run)
+        self.ai_thread.start()
+        
+        # 启用停止按钮
+        self.enable_stop_button(True)
 
     def import_files(self):
         """
@@ -293,28 +478,39 @@ class MainWindow(QMainWindow):
         code = self.result_queue.get()
         self.ui.plainTextEdit_code.setPlainText(code)
 
-        print("▶ 在主线程执行生成代码")
+        # 完成AI生成后禁用停止按钮
+        self.enable_stop_button(False)
+        
+        # 检查是否需要自动执行
         try:
-            exec(code, {})
-            print("完成")
+            if self.ui.checkBox_auto_execute.isChecked():
+                print("▶ 在后台进程中执行生成代码")
+                # 在后台进程中执行代码
+                self.code_runner.run_code_in_background(code)
         except Exception as e:
-            print(f"❌ 执行代码失败，错误如下:\n {e}")
+            print(e)
+            self.code_runner.run_code_in_background(code)
 
 
     def direct_run(self):
         code = self.ui.plainTextEdit_code.toPlainText()
-        print("▶ 在主线程执行生成代码")
+        print("▶ 在后台进程中执行代码")
+        # 在后台进程中执行代码
+        self.code_runner.run_code_in_background(code)
+
+    def enable_stop_button(self, enabled: bool):
+        """启用或禁用停止按钮"""
         try:
-            exec(code)
-            print("完成")
-        except Exception as e:
-            print(f"❌ 执行代码失败，错误如下:\n {e}")
+            self.ui.pushButton_stop.setEnabled(enabled)
+        except AttributeError:
+            # 如果使用动态创建的按钮
+            if hasattr(self, 'stop_button'):
+                self.stop_button.setEnabled(enabled)
 
     # ---------------------
     # 启动后台分析
     # ---------------------
     def generate_code(self):
-        # self.ui.pushButton_analyse.setDisabled(True)
         user_query = self.ui.plainTextEdit_query.toPlainText()
         system_prompt = """你是一个python绘图代码生成工具，你能根据用户的输入直接生成代码。
 你输出的内容只能有完整的代码，不能有代码之外的其它东西。
@@ -340,8 +536,11 @@ scipy
 
         print("🧵 启动后台线程")
 
-        self.thread = QThread(self)
-        self.worker = AnalyseWorker(
+        # 停止可能正在进行的AI生成
+        self.stop_ai_generation()
+
+        self.ai_thread = QThread(self)
+        self.ai_worker = AnalyseWorker(
             self.baseurl,
             self.model,
             self.api_key,
@@ -350,16 +549,23 @@ scipy
             self.result_queue
         )
 
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.thread.start()
+        self.ai_worker.moveToThread(self.ai_thread)
+        
+        # 连接线程完成的信号
+        self.ai_thread.started.connect(self.ai_worker.run)
+        self.ai_thread.finished.connect(lambda: self.enable_stop_button(False))
+        
+        self.ai_thread.start()
+        
+        # 启用停止按钮
+        self.enable_stop_button(True)
 
     # ---------------------
     # 配置文件
     # ---------------------
     def get_config(self) -> Tuple[str, str, str]:
         # 获取家目录下的配置文件路径
-        config_path = os.path.expanduser("~/.DumbyDraw_config.json")
+        config_path = os.path.expanduser("~/.dumbdrawphd_config.json")
 
         if not os.path.exists(config_path):
             # 确保家目录存在
@@ -385,7 +591,7 @@ scipy
 
     def save_config(self):
         try:
-            config_path = os.path.expanduser("~/.DumbyDraw_config.json")
+            config_path = os.path.expanduser("~/.dumbdrawphd_config.json")
 
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump({
@@ -402,7 +608,6 @@ scipy
         """
         测试 API 连接：直接问 AI 你是谁，无需生成代码运行
         """
-        # self.ui.pushButton_analyse.setDisabled(True)
         user_query = '画一个正弦函数'
         system_prompt = """你是一个python绘图代码生成工具，你能根据用户的输入直接生成代码。
            你输出的内容只能有代码，不能有代码之外的其它东西。
@@ -411,15 +616,14 @@ scipy
            除非用户指定了其它语言或者字体，否则务必使用英文作为图注、图题。
            代码中的注释与用户输入的语言一致
            """
-        # 获取 listWidget_files 中的文件
-        # files = [self.ui.listWidget_files.item(i).text() for i in range(self.ui.listWidget_files.count())]
-        # if files:
-        #     system_prompt += f"用户还提供了以下文件/文件夹和其路径，需要的时候在代码中写入读取对应文件的代码。路径如下：{files}"
 
         print("🧵 启动后台线程")
 
-        self.thread = QThread(self)
-        self.worker = AnalyseWorker(
+        # 停止可能正在进行的AI生成
+        self.stop_ai_generation()
+
+        self.ai_thread = QThread(self)
+        self.ai_worker = AnalyseWorker(
             self.baseurl,
             self.model,
             self.api_key,
@@ -428,9 +632,15 @@ scipy
             self.result_queue
         )
 
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.thread.start()
+        self.ai_worker.moveToThread(self.ai_thread)
+        self.ai_thread.started.connect(self.ai_worker.run)
+        self.ai_thread.finished.connect(lambda: self.enable_stop_button(False))
+        
+        self.ai_thread.start()
+        
+        # 启用停止按钮
+        self.enable_stop_button(True)
+
 
 # =====================================================
 # main
