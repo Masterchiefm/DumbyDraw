@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set APPDATA_DIR=%LOCALAPPDATA%\DumbDrawPhD
+set APPDATA_DIR=%LOCALAPPDATA%\DumbyDraw
 if not exist "%APPDATA_DIR%" (
     mkdir "%APPDATA_DIR%" 2>nul
 )
@@ -31,11 +31,11 @@ if errorlevel 1 (
 )
 
 rem Run the application
-if exist "%ENV%\Scripts\DumbDrawPhD.exe" (
-    "%ENV%\Scripts\DumbDrawPhD.exe"
+if exist "%ENV%\Scripts\DumbyDraw.exe" (
+    "%ENV%\Scripts\DumbyDraw.exe"
 ) else (
-    echo Error: DumbDrawPhD.exe not found at:
-    echo %ENV%\Scripts\DumbDrawPhD.exe
+    echo Error: DumbyDraw.exe not found at:
+    echo %ENV%\Scripts\DumbyDraw.exe
     pause
     exit /b 1
 )
