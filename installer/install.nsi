@@ -1,9 +1,9 @@
-!define APP_NAME "DumbDrawPhD"
-!define APP_VERSION "1.0.0"
-!define COMPANY "YourCompany"
+!define APP_NAME "DumbyDraw"
+!define APP_VERSION "1.4.1"
+!define COMPANY "ShanghaiTech University"
 !define INSTALL_DIR "$PROGRAMFILES64\${APP_NAME}"
 
-OutFile "DumbDrawPhD_Setup.exe"
+OutFile "DumbyDraw_Setup.exe"
 InstallDir "${INSTALL_DIR}"
 RequestExecutionLevel admin
 
@@ -17,25 +17,25 @@ Section "Install"
   SetOutPath "$INSTDIR"
 
   ; Copy files
-  File DumbDrawPhD_env.tar.gz
-  File run_DumbDrawPhD.bat
+  File DumbyDraw_env.tar.gz
+  File run_DumbyDraw.bat
   File icon.ico
 
   ; Create env directory
   CreateDirectory "$INSTDIR\env"
 
   ; Extract conda environment using Windows native tar
-  nsExec::ExecToLog '"$SYSDIR\tar.exe" -xzf "$INSTDIR\DumbDrawPhD_env.tar.gz" -C "$INSTDIR\env"'
+  nsExec::ExecToLog '"$SYSDIR\tar.exe" -xzf "$INSTDIR\DumbyDraw_env.tar.gz" -C "$INSTDIR\env"'
 
   ; Fix conda paths
   nsExec::ExecToLog '"$INSTDIR\env\Scripts\conda-unpack.exe"'
 
   ; Desktop shortcut
-  CreateShortCut "$DESKTOP\DumbDrawPhD.lnk" "$INSTDIR\run_DumbDrawPhD.bat" "" "$INSTDIR\icon.ico"
+  CreateShortCut "$DESKTOP\DumbyDraw.lnk" "$INSTDIR\run_DumbyDraw.bat" "" "$INSTDIR\icon.ico"
 
   ; Start menu shortcut
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"
-  CreateShortCut "$SMPROGRAMS\${APP_NAME}\DumbDrawPhD.lnk" "$INSTDIR\run_DumbDrawPhD.bat"
+  CreateShortCut "$SMPROGRAMS\${APP_NAME}\DumbyDraw.lnk" "$INSTDIR\run_DumbyDraw.bat"
 
   ; Registry entry for uninstall
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayName" "${APP_NAME}"
@@ -50,8 +50,8 @@ SectionEnd
 Section "Uninstall"
 
   ; Remove shortcuts
-  Delete "$DESKTOP\DumbDrawPhD.lnk"
-  Delete "$SMPROGRAMS\${APP_NAME}\DumbDrawPhD.lnk"
+  Delete "$DESKTOP\DumbyDraw.lnk"
+  Delete "$SMPROGRAMS\${APP_NAME}\DumbyDraw.lnk"
   RMDir "$SMPROGRAMS\${APP_NAME}"
 
   ; Remove installed files
