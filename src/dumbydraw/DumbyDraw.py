@@ -596,6 +596,61 @@ cartopy
 
         self.upgrade_dialog = None
 
+    def detect_table_files(self):
+        """
+        检测列表中的文件是否是表格文件，并读取前15行内容
+        返回包含表格信息的字典
+        """
+        table_info = {}
+        files = [self.ui.listWidget_files.item(i).text() for i in range(self.ui.listWidget_files.count())]
+        
+        for file_path in files:
+            # 检查文件扩展名是否是常见的表格文件
+            file_ext = os.path.splitext(file_path)[1].lower()
+            if file_ext in ['.csv', '.xlsx', '.xls', '.xlsm', '.xlsb', '.ods', '.tsv']:
+                try:
+                    print(f"📊 检测到表格文件: {file_path}")
+                    
+                    # 根据文件扩展名选择读取方式
+                    if file_ext == '.csv':
+                        # 尝试读取前5行
+                        df = pd.read_csv(file_path, nrows=15)
+                    elif file_ext in ['.xlsx', '.xls', '.xlsm', '.xlsb']:
+                        # Excel文件读取第一个工作表的前15行
+                        df = pd.read_excel(file_path, nrows=15, engine='openpyxl')
+                    elif file_ext == '.ods':
+                        # ODS文件
+                        df = pd.read_excel(file_path, nrows=15, engine='odf')
+                    elif file_ext == '.tsv':
+                        # TSV文件
+                        df = pd.read_csv(file_path, sep='\t', nrows=15)
+                    else:
+                        continue
+                    
+                    # 获取表格信息
+                    num_rows, num_cols = df.shape
+                    columns = df.columns.tolist()
+                    
+                    # 将DataFrame转换为字符串表示
+                    df_str = df.to_string(index=False)
+                    
+                    table_info[file_path] = {
+                        'path': file_path,
+                        'rows': num_rows,
+                        'columns': num_cols,
+                        'column_names': columns,
+                        'preview': df_str
+                    }
+                    
+                    print(f"✅ 成功读取表格文件: {file_path} ({num_rows}行, {num_cols}列)")
+                    
+                except Exception as e:
+                    print(f"⚠️ 读取表格文件 {file_path} 时出错: {e}")
+                    # 如果文件不是有效的表格，继续下一个文件
+                    continue
+        
+        return table_info
+
     def stop_all_processes(self):
         """停止所有正在运行的进程"""
         print("🛑 正在停止所有进程...")
@@ -657,14 +712,16 @@ cartopy
         original_code = self.ui.plainTextEdit_code.toPlainText()
         user_query = self.ui.plainTextEdit_query.toPlainText()
         system_prompt = self.system_prompt
-        files = [self.ui.listWidget_files.item(i).text() for i in range(self.ui.listWidget_files.count())]
-
-        # 构建文件预览信息
-        if files:
-            file_previews = self.build_file_previews(files)
-            print(f"file_previews:\n{file_previews}")
-            system_prompt += f"\n\n{file_previews}"
-
+        table_info = self.detect_table_files()
+        if table_info:
+            system_prompt += "\n\n用户上传的表格文件信息如下（前15行预览）：\n"
+            for file_path, info in table_info.items():
+                system_prompt += f"\n文件：{file_path}\n"
+                system_prompt += f"数据维度：{info['rows']}行 x {info['columns']}列\n"
+                system_prompt += f"前15行数据预览：\n{info['preview']}\n"
+                print(f"\n文件：{file_path}\n")
+                print(f"前15行数据预览：\n{info['preview']}\n")
+                
         edit_query = self.ui.plainTextEdit_edit_query.toPlainText()
         user_query = f"你需要修改代码，这是原始需求：{user_query}, 这是原始代码：{original_code},这是修改的需求：{edit_query}"
 
@@ -738,13 +795,15 @@ cartopy
     def generate_code(self):
         user_query = self.ui.plainTextEdit_query.toPlainText()
         system_prompt = self.system_prompt + "注意需要使用的包是否需要安装"
-        files = [self.ui.listWidget_files.item(i).text() for i in range(self.ui.listWidget_files.count())]
-
-        # 构建文件预览信息
-        if files:
-            file_previews = self.build_file_previews(files)
-            print(f"file_previews:\n{file_previews}")
-            system_prompt += f"\n\n{file_previews}"
+        table_info = self.detect_table_files()
+        if table_info:
+            system_prompt += "\n\n用户上传的表格文件信息如下（前15行预览）：\n"
+            for file_path, info in table_info.items():
+                system_prompt += f"\n文件：{file_path}\n"
+                system_prompt += f"数据维度：{info['rows']}行 x {info['columns']}列\n"
+                system_prompt += f"前15行数据预览：\n{info['preview']}\n"
+                print(f"\n文件：{file_path}\n")
+                print(f"前15行数据预览：\n{info['preview']}\n")
 
         print("🧵 启动后台线程")
         self.stop_ai_generation()
