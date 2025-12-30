@@ -66,7 +66,7 @@ class DeepSeek:
                         current_line = flush_line(current_line)
                     else:
                         current_line += char
-                full_response.append(chunk_reasoning_content)
+                #full_response.append(chunk_reasoning_content)
 
             if chunk_content:  # 过滤空内容
                 if not reason_complete:
