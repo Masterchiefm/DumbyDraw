@@ -331,7 +331,8 @@ class AnalyseWorker(QObject):
             code = self.client.get_response(
                 query=self.user_query,
                 prompt=self.system_prompt,
-                return_type="string"
+                return_type="string",
+                model=self.model
             )
 
             if self._stop_flag:
