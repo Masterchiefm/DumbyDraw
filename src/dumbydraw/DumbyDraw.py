@@ -46,17 +46,17 @@ def get_table_preview(file_path: str, max_rows: int = 15) -> str:
 
         if ext in ['.xlsx', '.xls']:
             # 读取Excel文件
-            df = pd.read_excel(file_path, nrows=max_rows)
+            df = pd.read_excel(file_path)
         elif ext == '.csv':
             # 读取CSV文件
-            df = pd.read_csv(file_path, nrows=max_rows)
+            df = pd.read_csv(file_path)
         elif ext == '.tsv':
             # 读取TSV文件
-            df = pd.read_csv(file_path, sep='\t', nrows=max_rows)
+            df = pd.read_csv(file_path, sep='\t')
         elif ext in ['.txt', '.data']:
             # 尝试读取文本文件
             try:
-                df = pd.read_csv(file_path, nrows=max_rows)
+                df = pd.read_csv(file_path)
             except:
                 # 如果标准读取失败，尝试读取前几行纯文本
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -73,11 +73,11 @@ def get_table_preview(file_path: str, max_rows: int = 15) -> str:
         preview_lines = []
         preview_lines.append(f"表格文件：{os.path.basename(file_path)}")
         preview_lines.append(f"总行数：{len(df)}，列数：{len(df.columns)}")
-        preview_lines.append(f"前{actual_rows}行数据预览：")
+        preview_lines.append(f"前{max_rows}行数据预览：")
         preview_lines.append("=" * 50)
         
         # 添加数据行
-        preview_lines.append(df.to_string(index=False))
+        preview_lines.append(df.head(max_rows).to_string(index=False))
         
         return "\n".join(preview_lines)
 
@@ -825,7 +825,8 @@ class MainWindow(QMainWindow):
 禁止 if __name__ == "__main__",代码结尾不要带plt.close()，即使保存了图片，也要plt.show().尽量只有一次plt.show(), 或者把需要生成的图做成一张大图和几张子图。
 除非用户指定了其它语言或者字体，否则务必使用英文作为图注、图题。
 代码中的注释与用户输入的语言一致
-注意用户输入的第几第几是人类语言，是从1开始，而不是python的从0开始。
+注意用户输入的第几第几是人类语言，是从1开始，而不是python的从0开始
+如果有双端测序需要拼接，一定要处理中间overlap而不是直接相加
 你代码中可以用python内置工具以及以下的第三方工具：
 matplotlib==3.7.5
 seaborn
