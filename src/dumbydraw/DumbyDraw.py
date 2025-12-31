@@ -75,7 +75,10 @@ def get_table_preview(file_path: str, max_rows: int = 15) -> str:
         preview_lines.append(f"总行数：{len(df)}，列数：{len(df.columns)}")
         preview_lines.append(f"前{actual_rows}行数据预览：")
         preview_lines.append("=" * 50)
-
+        
+        # 添加数据行
+        preview_lines.append(df.to_string(index=False))
+        
         return "\n".join(preview_lines)
 
     except Exception as e:
@@ -85,7 +88,9 @@ def get_table_preview(file_path: str, max_rows: int = 15) -> str:
 def get_file_preview(file_path: str) -> str:
     """
     根据文件类型获取预览信息
-    返回：文件路径 + 表格预览（如果有）
+    返回：
+    1. 对于表格文件：返回 "文件路径：{file_path}\n{preview}\n请注意数据的格式，数据可能是文本格式需要进行转换\n"
+    2. 对于非表格文件：只返回文件绝对路径
     """
     # 支持的表格文件扩展名
     table_extensions = ['.xlsx', '.xls', '.csv', '.tsv', '.txt', '.data']
@@ -96,7 +101,8 @@ def get_file_preview(file_path: str) -> str:
         preview = get_table_preview(file_path)
         return f"文件路径：{file_path}\n{preview}\n请注意数据的格式，数据可能是文本格式需要进行转换\n"
     else:
-        return f"文件路径：{file_path}\n"
+        # 非表格文件，只返回绝对路径
+        return f"\n{file_path}"
 
 
 # =====================================================
@@ -884,7 +890,7 @@ cartopy
                     
                     # 获取表格信息
                     num_rows, num_cols = df.shape
-                    columns = df.columns.tolist()
+                    # columns = df.columns.tolist()
                     
                     # 将DataFrame转换为字符串表示
                     df_str = df.to_string(index=False)
@@ -893,7 +899,6 @@ cartopy
                         'path': file_path,
                         'rows': num_rows,
                         'columns': num_cols,
-                        'column_names': columns,
                         'preview': df_str
                     }
                     
@@ -903,7 +908,10 @@ cartopy
                     print(f"⚠️ 读取表格文件 {file_path} 时出错: {e}")
                     # 如果文件不是有效的表格，继续下一个文件
                     continue
-        
+            else:
+                table_info[file_path] = {
+                    'path':file_path
+                }
         return table_info
 
     def stop_all_processes(self):
@@ -958,8 +966,14 @@ cartopy
 
         for i, file_path in enumerate(file_paths, 1):
             preview = get_file_preview(file_path)
-            preview_parts.append(f"\n【文件{i}】")
-            preview_parts.append(preview)
+            # 检查是否为表格文件（包含预览内容）
+            if os.path.splitext(file_path)[1].lower() in ['.xlsx', '.xls', '.csv', '.tsv', '.txt', '.data']:
+                preview_parts.append(f"\n【文件{i}】")
+                preview_parts.append(preview)
+            else:
+                # 非表格文件，只显示路径
+                preview_parts.append(f"\n【文件{i}】")
+                preview_parts.append(f"文件路径：{preview}")
 
         return "\n".join(preview_parts)
 
@@ -969,13 +983,18 @@ cartopy
         system_prompt = self.system_prompt
         table_info = self.detect_table_files()
         if table_info:
-            system_prompt += "\n\n用户上传的表格文件信息如下（前15行预览）：\n"
+            system_prompt += "\n\n用户上传的文件信息如下：\n"
             for file_path, info in table_info.items():
                 system_prompt += f"\n文件：{file_path}\n"
-                system_prompt += f"数据维度：{info['rows']}行 x {info['columns']}列\n"
-                system_prompt += f"前15行数据预览：\n{info['preview']}\n"
                 print(f"\n文件：{file_path}\n")
-                print(f"前15行数据预览：\n{info['preview']}\n")
+                try:
+                    system_prompt += f"数据维度：{info['rows']}行 x {info['columns']}列\n"
+                    system_prompt += f"前15行数据预览：\n{info['preview']}\n"
+                    print(f"前15行数据预览：\n{info['preview']}\n")
+                except:
+                    print(f"{file_path}非表格数据")
+                
+                
                 
         edit_query = self.ui.plainTextEdit_edit_query.toPlainText()
         user_query = f"你需要修改代码，这是原始需求：{user_query}, 这是原始代码：{original_code},这是修改的需求：{edit_query}"
@@ -1052,13 +1071,16 @@ cartopy
         system_prompt = self.system_prompt + "注意需要使用的包是否需要安装"
         table_info = self.detect_table_files()
         if table_info:
-            system_prompt += "\n\n用户上传的表格文件信息如下（前15行预览）：\n"
+            system_prompt += "\n\n用户上传的文件信息如下：\n"
             for file_path, info in table_info.items():
                 system_prompt += f"\n文件：{file_path}\n"
-                system_prompt += f"数据维度：{info['rows']}行 x {info['columns']}列\n"
-                system_prompt += f"前15行数据预览：\n{info['preview']}\n"
                 print(f"\n文件：{file_path}\n")
-                print(f"前15行数据预览：\n{info['preview']}\n")
+                try:
+                    system_prompt += f"数据维度：{info['rows']}行 x {info['columns']}列\n"
+                    system_prompt += f"前15行数据预览：\n{info['preview']}\n"
+                    print(f"前15行数据预览：\n{info['preview']}\n")
+                except:
+                    print(f"{file_path}非表格数据")
 
         print("🧵 启动后台线程")
         self.stop_ai_generation()
