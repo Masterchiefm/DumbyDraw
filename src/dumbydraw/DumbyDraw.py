@@ -877,16 +877,16 @@ cartopy
                     # 根据文件扩展名选择读取方式
                     if file_ext == '.csv':
                         # 尝试读取前5行
-                        df = pd.read_csv(file_path, nrows=15)
+                        df = pd.read_csv(file_path)
                     elif file_ext in ['.xlsx', '.xls', '.xlsm', '.xlsb']:
                         # Excel文件读取第一个工作表的前15行
-                        df = pd.read_excel(file_path, nrows=15, engine='openpyxl')
+                        df = pd.read_excel(file_path, engine='openpyxl')
                     elif file_ext == '.ods':
                         # ODS文件
-                        df = pd.read_excel(file_path, nrows=15, engine='odf')
+                        df = pd.read_excel(file_path, engine='odf')
                     elif file_ext == '.tsv':
                         # TSV文件
-                        df = pd.read_csv(file_path, sep='\t', nrows=15)
+                        df = pd.read_csv(file_path, sep='\t')
                     else:
                         continue
                     
@@ -895,7 +895,7 @@ cartopy
                     # columns = df.columns.tolist()
                     
                     # 将DataFrame转换为字符串表示
-                    df_str = df.to_string(index=False)
+                    df_str = df.head(15).to_string(index=False)
                     
                     table_info[file_path] = {
                         'path': file_path,
