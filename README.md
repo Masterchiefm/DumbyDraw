@@ -21,8 +21,11 @@
 ### 3. 给我把南极站标出来
 <img width="1742" height="923" alt="image" src="https://github.com/user-attachments/assets/a37a76c4-f2fe-463e-99e7-e0c85dd9043b" />
 
+### 4. 做点统计啥的
+<img width="1523" height="923" alt="image" src="https://github.com/user-attachments/assets/ffc1b039-5060-4caf-96f8-3c7b7577ef35" />
 
-### 4. 随便画点什么
+
+### 5. 随便画点什么
    <img width="1117" height="900" alt="image" src="https://github.com/user-attachments/assets/402de58c-cd33-4767-92ab-2dd85def5828" />
 
 
