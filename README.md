@@ -10,7 +10,8 @@
 ## 示例
 
 ### 1. 给我处理测序数据
-<img width="1193" height="956" alt="image" src="https://github.com/user-attachments/assets/27906c40-6ca1-40ae-8a62-6d27b644f0b0" />
+<img width="1193" height="956" alt="image" src="https://github.com/user-attachments/assets/894d8a83-2cad-418a-836a-3263467eb255" />
+
 
 
 ### 2. 给我画信号热图
