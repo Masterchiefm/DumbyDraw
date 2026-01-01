@@ -46,8 +46,8 @@ class DeepSeek:
         )
 
         full_response = []
-        print("thinking:")
-        think_complete = False
+        print("reasoning:")
+        reason_complete = False
         current_line = ""  # 用于缓存当前行的内容
 
         def flush_line(line):
@@ -58,22 +58,22 @@ class DeepSeek:
 
         for chunk in response:
             chunk_content = chunk.choices[0].delta.content
-            chunk_thinking_content = chunk.choices[0].delta.thinking_content
+            chunk_reasoning_content = chunk.choices[0].delta.reasoning_content
 
-            if chunk_thinking_content:  # 过滤空内容
-                # 处理thinking内容，按行输出
-                for char in chunk_thinking_content:
+            if chunk_reasoning_content:  # 过滤空内容
+                # 处理reasoning内容，按行输出
+                for char in chunk_reasoning_content:
                     if char == '\n':
                         current_line = flush_line(current_line)
                     else:
                         current_line += char
-                #full_response.append(chunk_thinking_content)
+                #full_response.append(chunk_reasoning_content)
 
             if chunk_content:  # 过滤空内容
-                if not think_complete:
+                if not reason_complete:
                     current_line = flush_line(current_line)  # 确保之前的行被输出
-                    print("\nEnd of thinking\n\nOutput:\n")
-                    think_complete = True
+                    print("\nEnd of reasoning\n\nOutput:\n")
+                    reason_complete = True
                 # 处理普通内容，按行输出
                 for char in chunk_content:
                     if char == '\n':
