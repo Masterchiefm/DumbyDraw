@@ -1,6 +1,6 @@
 pyside6
 requests
-matplotlib==3.7.5
+matplotlib
 seaborn
 pandas
 openpyxl
@@ -16,3 +16,4 @@ scipy
 opencv-python
 cartopy
 openai
+
