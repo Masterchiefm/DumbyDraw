@@ -10,24 +10,25 @@
 ## 示例
 
 ### 1. 给我处理测序数据
-<img width="1193" height="956" alt="image" src="https://github.com/user-attachments/assets/0ff244ad-e03e-41f1-ae8c-cf365d616f03" />
+![功能演示截图](screenshoot/1.png)
 
 
 
 ### 2. 给我画信号热图
-<img width="3439" height="1411" alt="屏幕截图 2026-01-01 175222" src="https://github.com/user-attachments/assets/b28442ba-b293-4413-a5e4-0736f5b0ea60" />
+
+![功能演示截图](screenshoot/2.png)
 
 
 ### 3. 给我把南极站标出来
-<img width="1742" height="923" alt="image" src="https://github.com/user-attachments/assets/a37a76c4-f2fe-463e-99e7-e0c85dd9043b" />
+![功能演示截图](screenshoot/3.png)
 
 ### 4. 做点统计啥的
-<img width="1523" height="763" alt="image" src="https://github.com/user-attachments/assets/2b4b4e87-c8e9-446a-9bc6-6144d62852e6" />
+![功能演示截图](screenshoot/4.png)
 
 
 
 ### 5. 随便画点什么
-   <img width="1117" height="900" alt="image" src="https://github.com/user-attachments/assets/402de58c-cd33-4767-92ab-2dd85def5828" />
+![功能演示截图](screenshoot/5.png)
 
 
 
