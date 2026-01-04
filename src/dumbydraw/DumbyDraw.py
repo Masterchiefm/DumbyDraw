@@ -44,9 +44,9 @@ def get_sys_info():
     if conda_env_path:
         conda_env_path = f"conda可执行文件在{conda_env}"
       
-  info = (f"\n用户当前平台信息：\n\n当前虚拟环境路径: {venv_path}; Python解释器地址: {executable}; 操作系统是{os_info}；{conda_env_path}")
-  print(info)
-  return info
+    info = (f"\n用户当前平台信息：\n\n当前虚拟环境路径: {venv_path}; Python解释器地址: {executable}; 操作系统是{os_info}；{conda_env_path}")
+    print(info)
+    return info
 
 
 # =====================================================
